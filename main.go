@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"gitlab.com/gomidi/midi/v2"
 	"gitlab.com/gomidi/midi/v2/smf"
@@ -81,7 +82,9 @@ func playMIDI(filePath string, deviceIndex int) {
 	go func() {
 		<-sigChan
 		fmt.Println("Interrupted! Sending NoteOff...")
+		time.Sleep(100 * time.Millisecond)
 		sendNoteOff(out)
+		drv.Close()
 		os.Exit(0)
 	}()
 
