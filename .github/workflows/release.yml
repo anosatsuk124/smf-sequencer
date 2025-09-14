@@ -84,7 +84,8 @@ jobs:
           CGO_ENABLED: 1
           CC: x86_64-w64-mingw32-gcc
           CXX: x86_64-w64-mingw32-g++
-          PKG_CONFIG: pkgconf
+          # Use static flags from pkg-config to prefer static libs
+          PKG_CONFIG: pkgconf --static
         run: |
           set -euxo pipefail
           BIN_NAME=smf-sequencer
@@ -93,7 +94,8 @@ jobs:
           mkdir -p dist
           OUT="dist/${BIN_NAME}_${GOOS}_${GOARCH}"
           mkdir -p "$OUT"
-          go build -v -o "$OUT/${BIN_NAME}.exe"
+          # Statically link libstdc++ and libgcc to avoid DLL dependencies
+          go build -v -ldflags '-linkmode external -extldflags "-static -static-libgcc -static-libstdc++"' -o "$OUT/${BIN_NAME}.exe"
           (cd "$OUT" && zip -9 "../${BIN_NAME}_${GOOS}_${GOARCH}.zip" "${BIN_NAME}.exe")
           echo "ASSET_PATH=dist/${BIN_NAME}_${GOOS}_${GOARCH}.zip" >> "$GITHUB_ENV"
           echo "ASSET_NAME=${BIN_NAME}_${GOOS}_${GOARCH}.zip" >> "$GITHUB_ENV"
